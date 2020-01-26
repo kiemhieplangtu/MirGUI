@@ -1,0 +1,14 @@
+vis=
+select=
+line=
+stokes='xx,yy'
+interval=
+hann=
+offset=
+options=
+axis='freq,amp'
+xrange=
+yrange=
+device='/xs'
+nxy=
+log=

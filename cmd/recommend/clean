@@ -1,0 +1,14 @@
+map=
+beam=
+model=
+out=
+options=
+cutoff=
+niters=10000
+region='@cgcurs.region'
+gain=0.1
+phat=
+minpatch=
+speed=
+mode=
+clip=

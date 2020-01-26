@@ -1,0 +1,8 @@
+in=
+region='quarter'
+clip=
+object='point'
+spar='1,0,0'
+fix=
+out=
+options='residual'

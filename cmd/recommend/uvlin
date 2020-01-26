@@ -1,0 +1,9 @@
+vis=
+out=
+select=
+line=
+chans='1,220,350,514'
+order=1
+offset=
+mode='line'
+options='sun,twofit'

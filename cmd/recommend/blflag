@@ -1,0 +1,10 @@
+vis=
+line=
+device='/xs'
+stokes='xx,yy'
+select=
+axis='chan,amp'
+options=nofqav,nobase'
+xrange=
+yrange=
+options=

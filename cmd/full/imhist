@@ -1,0 +1,4 @@
+in=
+region='relcenter,boxes(-11,-16,18,13)'
+options='nbin,100'
+device='/xs'

@@ -1,0 +1,13 @@
+in=
+type='p'
+region=
+xybin=
+chan=
+slev=
+range='0,0,lin'
+labtyp='arcmin'
+device='/xs'
+nxy=
+options='region'
+3format=
+csize=

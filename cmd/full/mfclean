@@ -1,0 +1,6 @@
+map=
+beam=
+out=
+cutoff=4e-5
+niters=1000
+region='relcenter,boxes(-597,-134,597,134)'

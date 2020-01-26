@@ -1,0 +1,17 @@
+vis=
+line=
+select=
+stokes='xx,yy'
+axis='time,phase'
+xrange=
+yrange=
+average=
+hann=
+inc=
+options='nofqav'
+subtitle=
+device='/xs'
+nxy=
+size=
+log=
+comment=

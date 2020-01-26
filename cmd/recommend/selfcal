@@ -1,0 +1,5 @@
+vis=
+model=
+clip=0.013
+interval=1
+options='phase,mfs'
