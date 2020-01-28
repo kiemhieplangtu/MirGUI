@@ -99,44 +99,65 @@ class Window(tk.Frame):
         self.master.config(menu=menu)
 
 
-        # create the file object)
+        # 1. create the file object)
         file = tk.Menu(menu, tearoff=True)
 
         # adds a command to the menu option, calling it exit, and the
         # command it runs on event is client_exit
         file.add_command(label='Exit', command=self._exit)
 
-        #added "file" to our menu
+        # add "file" to our menu
         menu.add_cascade(label='File', menu=file)
 
         
 
 
 
-        # create the file object)
+        # 2. Edit
         edit = tk.Menu(menu, tearoff=True)
 
         # adds a command to the menu option, calling it exit, and the
         # command it runs on event is client_exit
         edit.add_command(label='Undo')
 
-        #added "file" to our menu
+        #added "Edit" to our menu
         menu.add_cascade(label='Edit', menu=edit)
 
 
 
+        
 
-        # create the file object)
+        # 3. mode for data reduction
+        mode = tk.Menu(menu, tearoff=True)
+
+        # adds a command to the menu 'mode'
+        mode.add_command(label='Freebie' )
+        mode.add_command(label='Continuum' )
+        mode.add_command(label='Spectral line' )
+
+        # add "Mode" to our menu
+        menu.add_cascade(label='Mode', menu=mode)
+
+
+
+
+
+
+        # Help
         help = tk.Menu(menu, tearoff=True)
 
-        # adds a command to the menu option, calling it exit, and the
-        # command it runs on event is client_exit
+        # adds a command to the menu option
         help.add_command(label='Guide',
             command=lambda filename='docs/HELP.txt',
             title='GUI - Miriad Imaging': self.show_textfile(filename, title) )
 
-        #added "file" to our menu
+        #added "Help" to our menu
         menu.add_cascade(label='Help', menu=help)
+
+
+
+
+        
 
 
 
@@ -187,7 +208,7 @@ class Window(tk.Frame):
 
         
         # Link for the command
-        link = tk.Label(self.mainframe, text="Help "+self.cmd.get(), fg="blue", cursor="hand2")
+        link = tk.Label(self.mainframe, text='Help '+self.cmd.get()+' (online)', fg='blue', cursor='hand2')
         link.bind("<Button-1>", lambda e: self.callback('https://www.atnf.csiro.au/computing/software/miriad/doc/'+self.cmd.get()+'.html') )
         link.grid(row=1, column=2, padx=5, pady=2, sticky='EW')
 

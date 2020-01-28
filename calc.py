@@ -136,118 +136,6 @@ def load_config(file):
 
 
 
-## Calculate the baselines in metres from the antenna
- # coordinates in the Earth-centred system.
- #
- # params dict data   infor of the array
- #
- # return ???
- # 
- # Version 11/2019
- # Author Hiep Nguyen
- ##
-def get_baselines(dat):
-    Lx = np.zeros( (dat['n_base']) )
-    Ly = np.zeros( (dat['n_base']) )
-    Lz = np.zeros( (dat['n_base']) )
-
-    # Loop through the unique antenna pairs
-    n = 0
-    for i in range(dat['n_ant']-1):
-        for j in range(i+1, dat['n_ant']):
-            Lx[n] = dat['x_m'][j] - dat['x_m'][i]
-            Ly[n] = dat['y_m'][j] - dat['y_m'][i]
-            Lz[n] = dat['z_m'][j] - dat['z_m'][i]
-            n += 1
-
-    # Calculate vector of baseline lengths
-    base = np.sqrt(Lx**2.0 + Ly**2.0 + Lz**2.0)
-
-    return Lx, Ly, Lz, base ## in meters
-
-
-
-
-
-## Calc. the elevation curves for an array from source declination within a range of hour-angles
- #
- # params float   latitude_rad   Lattitude in radians
- # params list    ha_hr          starting and ending Hour-angles
- # params float   decl           Declination
- # params float   samp_rate      sampling rate in seconds
- #
- # return ???
- # 
- # Version 11/2019
- # Author Hiep Nguyen
- ##
-def get_elevation_curve(latitude_rad, ha_hr, decl, samp_rate):
-	samp_rate_hr                = samp_rate / 3600.0
-	# samp_rate_deg              = samp_rate_hr * 15.0
-	
-	n_samp                      = int((ha_hr[1] - ha_hr[0])/samp_rate_hr + 1)
-	
-	ha_arr_hr                   = np.linspace(ha_hr[0], ha_hr[1], n_samp)
-	ha_arr_rad                  = np.radians(ha_arr_hr * 15.0)
-	
-	dec_rad                     = np.radians(decl)
-	
-	el_arr_rad                  = (np.sin(latitude_rad) * np.sin(dec_rad) + np.cos(latitude_rad) * np.cos(dec_rad) * np.cos(ha_arr_rad))
-	el_arr_deg                  = np.degrees(el_arr_rad)
-	el_arr_deg[el_arr_deg < 0.] = 0.0
-	
-	return ha_arr_hr, el_arr_deg
-
-
-
-
-## Calc. the uv-coverage
- #
- # params dict data   infor of the array
- #
- # return uv arrays in unit of lambda
- # 
- # Version 11/2019
- # Author Hiep Nguyen
- ##
-def get_uv_coverage(infor, decl, ha_arr_hr, el_arr_deg, lambda_m):
-	dec_rad                      = np.radians( decl )
-	latitude_rad                 = infor['latitude_rad']
-	ha_arr_rad                   = np.radians(ha_arr_hr * 15.0)
-	ha_arr_rad[el_arr_deg <= 0.] = np.nan
-	nsamples                     = len(ha_arr_rad)
-
-	u_m = np.zeros( (infor['n_base'], nsamples) )
-	v_m = np.zeros( (infor['n_base'], nsamples) )
-	for i in range(infor['n_base']):
-	    u_m[i, :] = (infor['Lx_m'][i] * np.sin(ha_arr_rad) + 
-	                 infor['Ly_m'][i] * np.cos(ha_arr_rad))
-	    v_m[i, :] = (-infor['Lx_m'][i] * np.sin(dec_rad) *
-	                 np.cos(ha_arr_rad) +
-	                 infor['Ly_m'][i] * np.sin(dec_rad) *
-	                 np.sin(ha_arr_rad) +
-	                 infor['Lz_m'][i] * np.cos(dec_rad))
-	u_arr_lda = u_m/lambda_m
-	v_arr_lda = v_m/lambda_m
-
-	# Calculate the max & min scales from the uv-coverage
-	if np.all(ha_arr_rad != ha_arr_rad):
-		scale_min_deg = np.nan
-		scale_max_deg = np.nan
-		pribeam_deg   = np.nan
-	else:
-	    xl_arr_lda = np.sqrt(u_arr_lda**2.0 + v_arr_lda**2.0)
-	    scale_min_deg = np.degrees(1.0/np.nanmax(xl_arr_lda))
-	    scale_max_deg = np.degrees(1.0/np.nanmin(xl_arr_lda))
-	    pribeam_deg   = np.degrees(1.22*lambda_m/ infor['diameter_m'])
-
-	return u_arr_lda, v_arr_lda
-
-
-
-
-
-
 ## Convert an angle in degrees to a unicode string with appropriate units.
  #
  # params float angle_deg   Angle in degree
@@ -284,165 +172,6 @@ def deg2str(angle_deg):
 
 
 
-## Calculate the 2D Fast Fourier Transform of the model image.
- #
- # params dict data   infor of the array
- #
- # return Arrays from FFT
- # 
- # Version 11/2019
- # Author Hiep Nguyen
- ##
-def invert_src_img(src_status, src_img_arr, pix_scale_img_asec, nx, ny):
-
-	# First check that a model has been loaded
-	if(not src_status):
-	    print("A model image has not been loaded.")
-	    sys.exit()
-
-	# Calculate the 2D FFT and scaling factors.
-	# The shape of FFT array is same as the model image.
-	try:
-		src_fft_arr        = np.fft.fft2(src_img_arr)
-		src_fft_arr        = np.fft.fftshift(src_fft_arr)
-		pix_scale_img_lam  = np.radians(pix_scale_img_asec/3600.0)
-		fft_scale_lam      = 1.0/pix_scale_img_lam
-		pix_scale_fftX_lam = 2.0*fft_scale_lam/nx
-		pix_scale_fftY_lam = 2.0*fft_scale_lam/ny            
-	except Exception:
-		print("Failed to calculate the FFT of the model image.")
-		sys.exit()
-
-	# Print the model FFT parameters
-	print ("\nModel FFT Parameters:")
-	print(u"Pixel scale = %.3f x %.3f k\u03bb" % \
-	      (pix_scale_fftX_lam/1000.0, pix_scale_fftY_lam/1000.0))
-	print(u"Image limits = -%.3f to +%.3f k\u03bb" % \
-	      (fft_scale_lam/1000.0, fft_scale_lam/1000.0))
-
-	return src_fft_arr, pix_scale_img_lam, fft_scale_lam, pix_scale_fftX_lam, pix_scale_fftY_lam
-
-
-
-
-
-## Grid the uv-coverage to use as a mask for the model FFT image
- #
- # params dict data   infor of the array
- #
- # return ???
- # 
- # Version 11/2019
- # Author Hiep Nguyen
- ##
-def grid_uvcoverage(src_fft_status, uv_status, src_fft_arr,\
-	fft_scale_lam, pix_scale_fftX_lam, pix_scale_fftY_lam,\
-	u_arr_lda, v_arr_lda):
-
-	# First check uv-coverage and model are available
-	if(not src_fft_status or not uv_status):
-		print('')
-		print('Model FFT or uv-Coverage unavailable!')
-		return
-
-	# Grid the uv-coverage
-	# src_fft_arr, pix_scale_img_lam, fft_scale_lam, pix_scale_fftX_lam, pix_scale_fftY_lam
-	try:
-	    uv_mask_arr = np.zeros(src_fft_arr.shape, dtype=np.int32)
-	    uv_cnt_arr  = np.zeros(src_fft_arr.shape, dtype=np.int32)
-
-	    u_lam = u_arr_lda.flatten()
-	    v_lam = v_arr_lda.flatten()
-	    u_pix = (u_lam+fft_scale_lam)/pix_scale_fftX_lam
-	    v_pix = (v_lam+fft_scale_lam)/pix_scale_fftY_lam
-	    u2_pix = (-u_lam+fft_scale_lam)/pix_scale_fftX_lam
-	    v2_pix = (-v_lam+fft_scale_lam)/pix_scale_fftY_lam
-	    for j in range(len(u_pix)):
-	        try:
-	            uv_mask_arr[int(v_pix[j]), int(u_pix[j])]   = 1
-	            uv_mask_arr[int(v2_pix[j]), int(u2_pix[j])] = 1
-	            uv_cnt_arr[int(v_pix[j]), int(u_pix[j])]    += 1
-	            uv_cnt_arr[int(v2_pix[j]), int(u2_pix[j])]  += 1
-	        except Exception:
-	            # Ignore if visibility falls outside of the FFT image
-	            pass
-	except Exception:
-	        print("Gridding failed!")
-	        sys.exit()
-
-	# Apply the gridded uv-coverage to the model FFT
-	try:
-	    obs_fft_arr = src_fft_arr.copy()*uv_mask_arr
-	except Exception:
-	    print("Masking failed!")
-	    return
-	            
-	# Print the percentage coverage
-	print('')
-	npix = uv_mask_arr.shape[0] * uv_mask_arr.shape[1]
-	n_used_pix = np.sum(uv_mask_arr)
-	pc = n_used_pix*100.0/npix
-	print("{:.2f} % of pixels used in observed FFT image.".format(pc))
-
-	return uv_mask_arr, uv_cnt_arr, obs_fft_arr
-
-
-
-
-
-
-
-## Calculate the beam image for the gridded uv-coverage
- #
- # params dict data   infor of the array
- #
- # return ???
- # 
- # Version 11/2019
- # Author Hiep Nguyen
- ##
-def get_synth_beam(griduv_status, uv_mask_arr):
-
-	# Calculate the beam image
-	try:
-		beam_arr = np.fft.ifft2(uv_mask_arr)
-		beam_arr = np.fft.ifftshift(beam_arr)
-	except Exception:
-		print("Failed to calculate the beam image!")
-
-	return beam_arr
-
-
-
-
-
-
-## Invert (observation) to produce the final image
- #
- # params dict data   infor of the array
- #
- # return ???
- # 
- # Version 11/2019
- # Author Hiep Nguyen
- ##
-def invert_obs(griduv_status, beam_status, obs_fft_arr):
-    
-    try:
-        # Invert to produce the final image
-        obs_img_arr = np.fft.ifft2(np.fft.ifftshift(obs_fft_arr))
-    except Exception:
-        print('Failed produce the observed image!')
-        return
-
-    # if self.verbose:
-    #     print("Observation complete!")
-
-    return obs_img_arr
-
-
-
-
 ## get content from a file
  #
  # params str fname   File name
@@ -475,7 +204,7 @@ def get_content(fname, project, full=False):
 		if( txt[:3] == 'in='):
 			txt = txt.replace('in=', 'in='+fstr )
 
-		txt = txt.replace('out=', 'out='+project+'.uv' )
+		txt = txt.replace('out=', 'out='+'projects/'+project+'/'+project+'.uv' )
 	
 	return txt
 
@@ -512,9 +241,15 @@ def valid_args( **kwargs ):
  # Author Hiep Nguyen
  ##
 def get_args( cmd, txt ):
-	txt = txt.replace('\n',';')
 	txt = txt.replace('\'','')
-	txt = txt[:-1]
+	txt = txt.replace('\"','')
+	txt = txt.replace('\n',';')
+	
+	if( txt[-2:] == ';;' ):
+		txt = txt[:-2]
+	else:
+		txt = txt[:-1]
+	
 	if( txt[:3] == 'in='):
 		txt = txt.replace('in=','_in=')
 
@@ -552,7 +287,7 @@ def exe_cmd(cmd, kwargs):
 		s = mir.uvsplit( **kwargs )
 		print(s.decode("utf-8") )
 
-		out = kwargs['vis']
+		out  = kwargs['vis']
 
 		dirs = glob.glob('./*/')
 		dirs = glob.glob('*.[0-9][0-9][0-9][0-9]*', recursive=False) # 1 dot and 4 digits: '.[0-9][0-9][0-9][0-9]'
