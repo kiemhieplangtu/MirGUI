@@ -44,7 +44,7 @@ if sys.platform=="darwin":
     hasCV2 = False
 
 # Modules
-import calc as c
+import calc   as c
 
 
 
@@ -154,9 +154,6 @@ class Window(tk.Frame):
         #added "Help" to our menu
         menu.add_cascade(label='Help', menu=help)
 
-
-
-
         
 
 
@@ -175,7 +172,23 @@ class Window(tk.Frame):
         self.mainframe.columnconfigure(9, weight=1)
 
         self.mainframe.rowconfigure(0, weight=1)
-        self.mainframe.rowconfigure(1, weight=9)
+        self.mainframe.rowconfigure(1, weight=1)
+        self.mainframe.rowconfigure(2, weight=1)
+        self.mainframe.rowconfigure(3, weight=3)
+        self.mainframe.rowconfigure(4, weight=1)
+        self.mainframe.rowconfigure(5, weight=1)
+
+
+
+        irow = 0
+        ## Go!
+        tk.Button(self.mainframe, text='Go!', bg='lime', fg='black',
+            command=self._run).grid(row=irow, column=4, columnspan=1, padx=5, pady=2, sticky='EW')
+
+
+        ## Exit
+        tk.Button(self.mainframe, text='Exit', bg='red', fg='black',
+            command=self._exit).grid(row=irow, column=5, columnspan=1, padx=5, pady=2, sticky='EW')
 
 
 
@@ -187,15 +200,15 @@ class Window(tk.Frame):
         self.work.set(choices[0]) # set the default option
 
         xmenu    = tk.OptionMenu(self.mainframe, self.work, *choices, command=self.change_work)
-        tk.Label(self.mainframe, text='Project').grid(row=0, column=0, padx=5, pady=2, sticky='EW')
-        xmenu.grid(row=0, column=1, padx=5, pady=2, sticky='EW')
+        tk.Label(self.mainframe, text='Project').grid(row=irow, column=0, padx=5, pady=2, sticky='EW')
+        xmenu.grid(row=irow, column=1, padx=5, pady=2, sticky='EW')
 
 
 
 
 
 
-
+        irow += 1
         # For command dropdown
         self.cmd = tk.StringVar(self.master)
 
@@ -203,41 +216,50 @@ class Window(tk.Frame):
         self.cmd.set('atlod') # set the default option
 
         xmenu    = tk.OptionMenu(self.mainframe, self.cmd, *choices, command=self.change_cmd)
-        tk.Label(self.mainframe, text='Command').grid(row=1, column=0, padx=5, pady=2, sticky='EW')
-        xmenu.grid(row=1, column=1, padx=5, pady=2, sticky='EW')
+        tk.Label(self.mainframe, text='Command').grid(row=irow, column=0, padx=5, pady=2, sticky='EW')
+        xmenu.grid(row=irow, column=1, padx=5, pady=2, sticky='EW')
 
         
         # Link for the command
-        link = tk.Label(self.mainframe, text='Help '+self.cmd.get()+' (online)', fg='blue', cursor='hand2')
+        link = tk.Label(self.mainframe, text='<?>', fg='blue', cursor='hand2')
         link.bind("<Button-1>", lambda e: self.callback('https://www.atnf.csiro.au/computing/software/miriad/doc/'+self.cmd.get()+'.html') )
-        link.grid(row=1, column=2, padx=5, pady=2, sticky='EW')
+        link.grid(row=irow, column=2, padx=5, pady=2, sticky='EW')
 
 
-        # Text area: Recommend
-        fstyle    = tkFont.Font(family='Calibri', size=13)
-        args      = c.get_content( self.cmd.get(), self.work.get(), full=False )
-
-        tk.Label(self.mainframe, text='Recommended cmd').grid(row=3, column=0, padx=5, pady=2, sticky='EW')
-        self.text = tk.Text(self.mainframe, height=30, width=50, font=fstyle)
-        self.text.insert(tk.END, args)
-        self.text.grid(row=4, column=0, columnspan=2, padx=5, pady=2, sticky='EW')
-
+        irow += 1
+        fstyle = tkFont.Font(family='Calibri', size=13)
         
+        # Text area: Recommend
+        tk.Label(self.mainframe, text='\nOptions').grid(row=irow, column=0, padx=5, pady=2, sticky='EW')
+
         # Text area: FUll
-        args      = c.get_content( self.cmd.get(), self.work.get(), full=True )
-        tk.Label(self.mainframe, text='Full cmd').grid(row=3, column=3, padx=5, pady=2, sticky='EW')
-        self.textf = tk.Text(self.mainframe, height=30, width=50, font=fstyle)
+        tk.Label(self.mainframe, text='Full options (for ref.)').grid(row=irow, column=3, padx=5, pady=2, sticky='EW')
+        
+
+        irow += 1
+        # Text: options
+        args      = c.get_content( self.cmd.get(), self.work.get(), full=False )
+        self.text = tk.Text(self.mainframe, height=20, width=50, font=fstyle)
+        self.text.insert(tk.END, args)
+        self.text.grid(row=irow, column=0, columnspan=2, padx=5, pady=2, sticky='EW')
+
+
+        # Text: full options
+        args       = c.get_content( self.cmd.get(), self.work.get(), full=True )
+        self.textf = tk.Text(self.mainframe, height=20, width=50, font=fstyle)
         self.textf.insert(tk.END, args)
-        self.textf.grid(row=4, column=3, columnspan=2, padx=5, pady=2, sticky='EW')
-
-        ## Go!
-        tk.Button(self.mainframe, text='Go!', bg='lime', fg='black',
-            command=self._run).grid(row=0, column=4, columnspan=1, padx=5, pady=2, sticky='EW')
+        self.textf.grid(row=irow, column=3, columnspan=2, padx=5, pady=2, sticky='EW')
 
 
-        ## Exit
-        tk.Button(self.mainframe, text='Exit', bg='red', fg='black',
-            command=self._exit).grid(row=0, column=5, columnspan=1, padx=5, pady=2, sticky='EW')
+        irow += 1
+        # Text area: Message - Label
+        tk.Label(self.mainframe, text='Message:').grid(row=irow, column=0, padx=5, pady=2, sticky='EW')
+        
+        irow += 1
+        # Text area: Message
+        self.msg = tk.Text(self.mainframe, height=10, width=50, font=fstyle)
+        self.msg.insert(tk.END, '')
+        self.msg.grid(row=irow, column=0, columnspan=2, padx=5, pady=2, sticky='EW')
 
 
 
@@ -251,9 +273,12 @@ class Window(tk.Frame):
 
     def _run(self):
         cmd = self.cmd.get()
-        print('Running cmd: ' + self.cmd.get())
-        kwargs = c.get_args( cmd, self.text.get("1.0", tk.END) )
-        c.exe_cmd(cmd, kwargs)
+        print('Running cmd: ' + cmd )
+        kwargs = c.get_args( cmd, self.text.get('1.0', tk.END) )
+        s      = c._exe(self.work.get(), cmd, kwargs)
+
+        self.msg.delete('1.0', tk.END)
+        self.msg.insert(tk.END, s)
 
 
 
@@ -296,7 +321,7 @@ class Window(tk.Frame):
         args = c.get_content( self.cmd.get(), self.work.get(), full=True )
         self.textf.insert(tk.END, args)
 
-        link = tk.Label(self.mainframe, text="Help "+self.cmd.get(), fg="blue", cursor="hand2")
+        link = tk.Label(self.mainframe, text='<?>', fg='blue', cursor='hand2')
         link.bind("<Button-1>", lambda e: self.callback('https://www.atnf.csiro.au/computing/software/miriad/doc/'+self.cmd.get()+'.html') )
         link.grid(row=1, column=2, padx=5, pady=2, sticky='EW')
 
@@ -318,7 +343,7 @@ class Window(tk.Frame):
 root = tk.Tk()
 
 # root.minsize(640, 100)
-root.geometry('1400x680')
+root.geometry('1400x900')
 root.resizable(0, 0)
 
 #creation of an instance

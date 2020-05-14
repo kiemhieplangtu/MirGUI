@@ -1,0 +1,2 @@
+-add:
+    stderr = stderr.decode('utf8')

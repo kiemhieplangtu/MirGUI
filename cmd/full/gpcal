@@ -1,11 +1,12 @@
 vis=
-line=
-stokes=
-edge=
 select=
+line=
 flux=
+spec=
 refant=
 minants=
-interval=0.1
-options=
+interval=
+nfbin=
 tol=
+xyphase=
+options=
